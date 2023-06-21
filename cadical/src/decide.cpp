@@ -12,6 +12,28 @@ namespace CaDiCaL {
 int Internal::next_decision_variable_on_queue () {
   int64_t searched = 0;
   int res = queue.unassigned;
+
+  if (opts.aux_cutoff) {
+    assert (res);
+    while (val (res) || (i2e[vidx(res)] >= opts.aux_cutoff)) {
+      if(!link (res).prev){
+        // printf("e Unable to find non-auxilliary decision variable on queue. Exiting on decision loop.\n");
+        // abort ();
+        goto NORMAL;
+      }
+      int temp = res;
+      res = link (res).prev, searched++;
+    }
+    if (searched) {
+      stats.searched += searched;
+      update_queue_unassigned (res);
+      LOG ("next queue decision variable %d bumped %" PRId64 "", res, bumped (res));
+      return res;
+    }
+  } 
+  // normal search
+NORMAL:
+  res = queue.unassigned;
   while (val (res))
     res = link (res).prev, searched++;
   if (searched) {
@@ -26,10 +48,26 @@ int Internal::next_decision_variable_on_queue () {
 //
 int Internal::next_decision_variable_with_best_score () {
   int res = 0;
+  int decision_cnt = 0;
+  bool is_aux = false;
+  bool pick_next = false;
   for (;;) {
     res = scores.front ();
-    if (!val (res)) break;
-    (void) scores.pop_front ();
+    assert (res);
+    is_aux = opts.aux_cutoff && (i2e[vidx(res)] >= opts.aux_cutoff);
+    if (!val (res) && (!is_aux || pick_next)) {
+      break;
+    } else if (!val (res) && is_aux) {
+      // if (!val (res) && decision_cnt > max_var) break;
+      stab[res] = -1;
+      scores.update(res);
+      decision_cnt++;
+    } else (void) scores.pop_front ();
+    if (decision_cnt > max_var) {
+      // printf("e Unable to find non-auxilliary decision variable on score heap. Exiting on decision loop.\n");
+      // abort ();
+      pick_next = true;
+    }
   }
   LOG ("next decision variable %d with score %g", res, score (res));
   return res;
@@ -136,6 +174,8 @@ int Internal::decide () {
   } else {
     stats.decisions++;
     int idx = next_decision_variable ();
+    assert (idx);
+    // assert (!opts.aux_cutoff || (i2e[vidx(idx)] < opts.aux_cutoff));
     const bool target = (opts.target > 1 || (stable && opts.target));
     int decision = decide_phase (idx, target);
     search_assume_decision (decision);
