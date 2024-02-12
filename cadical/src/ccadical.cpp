@@ -177,4 +177,8 @@ int ccadical_frozen (CCaDiCaL * ptr, int lit) {
   return ((Wrapper*) ptr)->solver->frozen (lit);
 }
 
+void ccadical_aux_variable (CCaDiCaL * ptr, int lit) {
+  ((Wrapper*) ptr)->solver->aux_variable (lit);
+}
+
 }

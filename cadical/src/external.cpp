@@ -60,6 +60,9 @@ void External::init (int new_max_var) {
     internal->i2e.push_back (eidx);
     assert (internal->i2e[iidx] == (int) eidx);
     assert (e2i[eidx] == (int) iidx);
+    if (internal->opts.aux_variables) {
+      internal->aux_variables.push_back (false);
+    }
   }
   if (internal->opts.checkfrozen)
     if (new_max_var >= (int64_t) moltentab.size ())
@@ -337,6 +340,12 @@ void External::melt (int elit) {
   } else
     LOG ("external variable %d melted but remains frozen forever", eidx);
   internal->melt (ilit);
+}
+
+void External::aux_variable (int elit) {
+  int ilit = internalize (elit);
+  // unsigned eidx = vidx (elit);
+  internal->aux_variable (elit);
 }
 
 /*------------------------------------------------------------------------*/

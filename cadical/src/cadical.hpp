@@ -571,7 +571,7 @@ public:
   bool frozen (int lit) const;
   void freeze (int lit);
   void melt (int lit);          // Also needs 'require (frozen (lit))'.
-
+  void aux_variable (int lit);
   //------------------------------------------------------------------------
 
   // Root level assigned variables can be queried with this function.

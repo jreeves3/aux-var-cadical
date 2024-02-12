@@ -1114,6 +1114,14 @@ struct Internal {
   }
   bool frozen (int lit) { return frozentab[vidx (lit)] > 0; }
 
+
+  vector<bool> aux_variables;
+
+  void aux_variable (int elit) {
+    int idx = abs (elit);
+    aux_variables [idx] = true;
+  }
+
   // Parsing functions in 'parse.cpp'.
   //
   const char * parse_dimacs (FILE *);

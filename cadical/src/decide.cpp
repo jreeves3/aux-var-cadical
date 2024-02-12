@@ -30,7 +30,24 @@ int Internal::next_decision_variable_on_queue () {
       LOG ("next queue decision variable %d bumped %" PRId64 "", res, bumped (res));
       return res;
     }
-  } 
+  } else if (opts.aux_variables) {
+    assert (res);
+    while (val (res) || aux_variables [(i2e[vidx(res)])]) {
+      if(!link (res).prev){
+        // printf("e Unable to find non-auxilliary decision variable on queue. Exiting on decision loop.\n");
+        // abort ();
+        goto NORMAL;
+      }
+      int temp = res;
+      res = link (res).prev, searched++;
+    }
+    if (searched) {
+      stats.searched += searched;
+      update_queue_unassigned (res);
+      LOG ("next queue decision variable %d bumped %" PRId64 "", res, bumped (res));
+      return res;
+    }
+  }
   // normal search
 NORMAL:
   res = queue.unassigned;
@@ -54,7 +71,8 @@ int Internal::next_decision_variable_with_best_score () {
   for (;;) {
     res = scores.front ();
     assert (res);
-    is_aux = opts.aux_cutoff && (i2e[vidx(res)] >= opts.aux_cutoff);
+    is_aux = (opts.aux_cutoff && (i2e[vidx(res)] >= opts.aux_cutoff)) || (opts.aux_variables && aux_variables [(i2e[vidx(res)])]);
+
     if (!val (res) && (!is_aux || pick_next)) {
       break;
     } else if (!val (res) && is_aux) {

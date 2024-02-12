@@ -211,6 +211,8 @@ struct External {
     return frozentab[eidx] > 0;
   }
 
+  void aux_variable (int elit);
+
   /*----------------------------------------------------------------------*/
 
   External (Internal *);

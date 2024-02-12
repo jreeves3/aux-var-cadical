@@ -825,6 +825,14 @@ bool Solver::frozen (int lit) const {
   return res;
 }
 
+void Solver::aux_variable (int lit) {
+  TRACE ("aux_variable", lit);
+  REQUIRE_VALID_STATE ();
+  REQUIRE_VALID_LIT (lit);
+  external->aux_variable (lit);
+  LOG_API_CALL_END ("aux_variable", lit);
+}
+
 /*------------------------------------------------------------------------*/
 
 bool Solver::trace_proof (FILE * external_file, const char * name) {
